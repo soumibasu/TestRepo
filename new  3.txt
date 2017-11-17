@@ -1,0 +1,25 @@
+select A.post_evar33,sum(case when time_diff>0 then (time_diff) else 0 end) from
+(select 
+date_time,
+post_visid_high,
+post_visid_low,
+visit_num,
+post_prop1,
+visit_page_num,
+post_cust_hit_time_gmt,
+post_page_event,
+post_evar1,
+post_evar33,
+case 
+when post_evar1 like '%article%' and 
+(lead(visit_page_num) over (order by post_evar33,post_visid_high, post_visid_low, date_time, visit_num, visit_page_num,post_cust_hit_time_gmt) - visit_page_num)>0 
+and (lead(post_visid_high) over (order by post_evar33,post_visid_high,post_visid_low, date_time, visit_num, visit_page_num,post_cust_hit_time_gmt) - visit_page_num)=0 
+and (lead(post_visid_low) over (order by post_evar33,post_visid_high,post_visid_low, date_time, visit_num, visit_page_num,post_cust_hit_time_gmt) - visit_page_num)=0
+then lead(post_cust_hit_time_gmt) over (order by post_evar33,post_visid_high,post_visid_low, date_time, visit_num, visit_page_num,post_cust_hit_time_gmt) - post_cust_hit_time_gmt else 0 end as time_diff
+from digital_audience.big_msnbc_omn_msnbcdotcom 
+where 
+date_time between '2015-03-01 00:00:00' and '2015-03-01 23:59:59' and 
+exclude_hit=0 and 
+post_evar33 in (
+'a5b26ee51e8f21e719ff1596d161cfc5') and
+hit_source not in ('5','8','9')) A group by 1;
